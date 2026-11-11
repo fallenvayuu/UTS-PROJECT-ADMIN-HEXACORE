@@ -4,33 +4,66 @@ import '../../../../core/di/injection.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/common_widgets.dart';
-import '../../domain/entities/faq.dart';
-import '../../domain/repositories/tentang_repository.dart';
+import '../viewmodels/tentang_viewmodel.dart';
 
 /// Tentang: sejarah paguyuban, lokasi & jam operasional, fasilitas, dan FAQ.
 class TentangPage extends StatefulWidget {
-  const TentangPage({super.key});
+  /// Opsional: isi dari luar (misalnya di test). Bila kosong, dibuat lewat Injection.
+  final TentangViewModel? viewModel;
+  const TentangPage({super.key, this.viewModel});
   @override
   State<TentangPage> createState() => _TentangPageState();
 }
 
 class _TentangPageState extends State<TentangPage> {
   int? _faqBuka = 0;
-  late final List<Faq> _faqList;
-  late final List<FasilitasPengunjung> _fasilitasList;
+  late final TentangViewModel _vm;
+  late final bool _punyaSendiri;
 
   @override
   void initState() {
     super.initState();
-    _faqList = Injection.get<GetFaqUseCase>().execute();
-    _fasilitasList = Injection.get<GetFasilitasPengunjungUseCase>().execute();
+    _punyaSendiri = widget.viewModel == null;
+    _vm = widget.viewModel ?? Injection.get<TentangViewModel>();
+    _vm.muat();
+  }
+
+  @override
+  void dispose() {
+    if (_punyaSendiri) _vm.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) => Column(children: [
         const WilisHeader(title: 'Tentang'),
-        Expanded(
-          child: ListView(padding: const EdgeInsets.fromLTRB(16, 16, 16, 28), children: [
+        Expanded(child: ListenableBuilder(listenable: _vm, builder: (context, _) => _badan())),
+      ]);
+
+  Widget _badan() {
+    if (_vm.sedangMuat && !_vm.termuat) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (_vm.error != null && !_vm.termuat) return _galat();
+    return _isi();
+  }
+
+  Widget _galat() => Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            const Icon(Icons.error_outline, size: 40, color: AppColors.muted),
+            const SizedBox(height: 12),
+            Text('Informasi belum bisa dimuat.', style: sans(14, weight: FontWeight.w700, color: AppColors.ink)),
+            const SizedBox(height: 4),
+            Text(_vm.error ?? '', textAlign: TextAlign.center, style: sans(12, color: AppColors.muted)),
+            const SizedBox(height: 16),
+            FilledButton(onPressed: _vm.muat, child: const Text('Coba Lagi')),
+          ]),
+        ),
+      );
+
+  Widget _isi() => ListView(padding: const EdgeInsets.fromLTRB(16, 16, 16, 28), children: [
             _hero(),
             const SizedBox(height: 16),
             _kutipan(),
@@ -47,12 +80,10 @@ class _TentangPageState extends State<TentangPage> {
             const SizedBox(height: 24),
             const SectionTitle(icon: Icons.help_outline, text: 'Pertanyaan Sering Ditanyakan (FAQ)'),
             const SizedBox(height: 12),
-            for (var i = 0; i < _faqList.length; i++) Padding(padding: const EdgeInsets.only(bottom: 10), child: _faq(i)),
+            for (var i = 0; i < _vm.faqList.length; i++) Padding(padding: const EdgeInsets.only(bottom: 10), child: _faq(i)),
             const SizedBox(height: 26),
             _penutup(),
-          ]),
-        ),
-      ]);
+          ]);
 
   Widget _hero() => ClipRRect(
         borderRadius: BorderRadius.circular(18),
@@ -201,7 +232,7 @@ class _TentangPageState extends State<TentangPage> {
     return LayoutBuilder(builder: (context, c) {
       final lebar = (c.maxWidth - 12) / 2;
       return Wrap(spacing: 12, runSpacing: 12, children: [
-        for (var i = 0; i < _fasilitasList.length; i++)
+        for (var i = 0; i < _vm.fasilitasList.length; i++)
           SizedBox(
             width: lebar,
             child: SoftCard(
@@ -210,9 +241,9 @@ class _TentangPageState extends State<TentangPage> {
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 ikon[i] == null ? const IconBox(letter: 'P', size: 38) : IconBox(icon: ikon[i], size: 38),
                 const SizedBox(height: 10),
-                Text(_fasilitasList[i].nama, style: sans(13.5, weight: FontWeight.w700, color: AppColors.ink)),
+                Text(_vm.fasilitasList[i].nama, style: sans(13.5, weight: FontWeight.w700, color: AppColors.ink)),
                 const SizedBox(height: 4),
-                Text(_fasilitasList[i].deskripsi, style: sans(12, color: AppColors.muted, height: 1.4)),
+                Text(_vm.fasilitasList[i].deskripsi, style: sans(12, color: AppColors.muted, height: 1.4)),
               ]),
             ),
           ),
@@ -221,7 +252,7 @@ class _TentangPageState extends State<TentangPage> {
   }
 
   Widget _faq(int i) {
-    final f = _faqList[i];
+    final f = _vm.faqList[i];
     final buka = _faqBuka == i;
     return Container(
       decoration: BoxDecoration(

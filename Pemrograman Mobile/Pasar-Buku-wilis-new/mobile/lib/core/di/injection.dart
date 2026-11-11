@@ -33,6 +33,7 @@ import '../../features/kios/presentation/viewmodels/denah_viewmodel.dart';
 import '../../features/tentang/data/datasources/tentang_local_datasource.dart';
 import '../../features/tentang/data/repositories/tentang_repository_impl.dart';
 import '../../features/tentang/domain/repositories/tentang_repository.dart';
+import '../../features/tentang/presentation/viewmodels/tentang_viewmodel.dart';
 
 class Injection {
   Injection._();
@@ -169,5 +170,11 @@ class Injection {
       toggleLikeUseCase: toggleLikeUseCase,
     );
     registerSingleton<ForumViewModel>(forumViewModel);
+
+    // Dibuat baru tiap diminta: dimiliki dan di-dispose oleh halaman Tentang.
+    registerFactory<TentangViewModel>(() => TentangViewModel(
+          getFaqUseCase: getFaqUseCase,
+          getFasilitasPengunjungUseCase: getFasilitasPengunjungUseCase,
+        ));
   }
 }
