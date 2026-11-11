@@ -1,6 +1,6 @@
 {
-    "name": "hexacore_mobile",
-    "short_name": "hexacore_mobile",
+    "name": "wilis_mobile",
+    "short_name": "wilis_mobile",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
