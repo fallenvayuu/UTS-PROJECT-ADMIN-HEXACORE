@@ -1,0 +1,46 @@
+name: wilis_mobile
+description: Aplikasi mobile Pasar Buku Wilis untuk pengunjung (jelajah kategori, denah kios, forum, dan info pasar).
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^1.2.2
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+
+  fonts:
+    - family: PlayfairDisplay
+      fonts:
+        - asset: assets/fonts/PlayfairDisplay-400-normal.ttf
+          weight: 400
+        - asset: assets/fonts/PlayfairDisplay-400-italic.ttf
+          weight: 400
+          style: italic
+        - asset: assets/fonts/PlayfairDisplay-600-normal.ttf
+          weight: 600
+        - asset: assets/fonts/PlayfairDisplay-700-normal.ttf
+          weight: 700
+    - family: PlusJakartaSans
+      fonts:
+        - asset: assets/fonts/PlusJakartaSans-400-normal.ttf
+          weight: 400
+        - asset: assets/fonts/PlusJakartaSans-500-normal.ttf
+          weight: 500
+        - asset: assets/fonts/PlusJakartaSans-600-normal.ttf
+          weight: 600
+        - asset: assets/fonts/PlusJakartaSans-700-normal.ttf
+          weight: 700
